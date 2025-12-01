@@ -124,7 +124,7 @@ class _MyWidgetState extends State<MyLogin> {
                               // For network image:
                               // image: NetworkImage('YOUR_IMAGE_URL'),
                               // For asset image:
-                              image: AssetImage('assets/bg_login'),
+                              image: AssetImage('asset/bg_login.jpg'),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -166,7 +166,7 @@ class _MyWidgetState extends State<MyLogin> {
                           ),
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedRole,
+                            initialValue: _selectedRole,
                             decoration: InputDecoration(
                               labelText: 'I am a',
                               labelStyle: TextStyle(
