@@ -24,6 +24,8 @@ class _MyWidgetState extends State<MyApp> {
         "/signup":(context)=> const MyRegister(),
         "/citizen":(context)=> const MyCitizen(),
         "/admin":(context)=> const Myadministrator(),
+
+        //Local changes
       }
     );
   }
