@@ -23,4 +23,7 @@ class User(db.Model):
     
 
 #for signup
-@auth_bp.route("/signup",Methods=["POST"])
+@auth_bp.route("/signup",methods=["POST"])
+def signup():
+    ...
+    
