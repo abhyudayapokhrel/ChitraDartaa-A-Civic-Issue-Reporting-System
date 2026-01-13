@@ -29,7 +29,7 @@ A platform that allows citizens to report civic issues (such as potholes, damage
 ## 🛠️ Technologies Used
 
 * **Frontend:** Flutter (Dart)
-* **Backend:** Firebase
+* **Backend:** Flask(RESTAPI)
 * **Database:** Firebase Firestore
 * **ML Model:** Python, TensorFlow
 
