@@ -39,7 +39,7 @@ def signup():
     existing_username=User.query.filter_by(username=username).first()
     existing_email=User.query.filter_by(email=email)
     if existing_email or existing_username:
-        return jsonify({"error":"User or Email exists!"})
+        return jsonify({"error":"User or Email exists!"}),409 #just adding error code for easier use 
     
     pasword_hash=generate_password_hash(password=password)
     new_user=User(username=username,email=email,password=pasword_hash,is_administrator=False)
@@ -50,7 +50,7 @@ def signup():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error":"Issue with dbase"})
+        return jsonify({"error":"Issue with dbase"}),500
     
 
     return jsonify({"message":"Successfully created user"}),201
