@@ -109,6 +109,37 @@ def create_access_token(user):
      
      return token
 
+#this is to create a decorator that would actually authenticate users with decoders for every request
+def token_required(f):
+    @wraps(f)
+    def decorated(*args,**kwargs):
+        token=None
+        auth_header=request.headers.get("Authorization")
+
+        if auth_header:
+            try:
+                token=auth_header.split(" ")[1]
+            except IndexError:
+                 return jsonify({"error":"Wrong token format!"}),401
+            if not token:
+                 return jsonify({"error":"No token found!"}),401
+            
+            try:
+                 payload=jwt.decode(
+                      token,
+                      key=current_app.config["SECRET_KEY"],
+                      algorithms=["HS256"]
+                 )
+                 request.user=payload["username"]
+            except jwt.ExpiredSignatureError:
+                 return jsonify({"error":"token has expired!"}),401
+            except jwt.InvalidTokenError:
+                 return jsonify({"error":"Invalid token!"}),401
+            return f(*args,**kwargs)
+        return decorated
+            
+          
+     
 
 @auth_bp.route("/whoami",methods=["GET"])
 @token_required
