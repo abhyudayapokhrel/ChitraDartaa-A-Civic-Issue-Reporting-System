@@ -115,10 +115,14 @@ def token_required(f):
     def decorated(*args,**kwargs):
         token=None
         auth_header=request.headers.get("Authorization")
-
+        if not auth_header:
+             return jsonify({"error":"Authorization header is missing!"}),401
         if auth_header:
             try:
-                token=auth_header.split(" ")[1]
+                head=auth_header.split(" ")
+                if len(head)!=2 or head[0]!="Bearer":
+                     return jsonify({"error":"Wrong token format use = Bearer <token>"})
+                token=head[1]
             except IndexError:
                  return jsonify({"error":"Wrong token format!"}),401
             if not token:
@@ -136,7 +140,7 @@ def token_required(f):
             except jwt.InvalidTokenError:
                  return jsonify({"error":"Invalid token!"}),401
             return f(*args,**kwargs)
-        return decorated
+    return decorated
             
           
      
