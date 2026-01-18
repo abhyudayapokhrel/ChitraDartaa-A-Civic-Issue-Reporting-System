@@ -1,13 +1,13 @@
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+
 from flask_cors import CORS 
 from dotenv import load_dotenv
 import os
-
+from extension import db
 load_dotenv()
 
 #creating dbase
-db=SQLAlchemy()
+
 
 def create_app():
     app=Flask(__name__)
@@ -19,7 +19,10 @@ def create_app():
 
     #setting cors so browser dont block its running
     cors_origin=os.getenv("CORS_ORIGINS","*")
-    CORS(app,resources={r"/*":{"origins":cors_origin}})
+    CORS(app,resources={r"/*": {"origins": "*"}}, 
+     expose_headers=["Content-Type", "Authorization"],
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "OPTIONS"])
 
 
     #here adding this to add other backend files for inference adding this so i can add later into the future
@@ -41,7 +44,7 @@ if __name__=="__main__":
 
 
     app.run(
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=port,
         debug=os.getenv("FLASK_ENV")=="development"
     )

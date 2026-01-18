@@ -4,7 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import jwt
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-
+from extension import db
 
 
 
@@ -41,8 +41,8 @@ def signup():
     if existing_email or existing_username:
         return jsonify({"error":"User or Email exists!"}),409 #just adding error code for easier use 
     
-    pasword_hash=generate_password_hash(password=password)
-    new_user=User(username=username,email=email,password_hash=pasword_hash,is_administrator=False)
+    password_hash=generate_password_hash(password=password)
+    new_user=User(username=username,email=email,password_hash=password_hash,is_administrator=False)
 
     #adding the user into the dbase
     try:
