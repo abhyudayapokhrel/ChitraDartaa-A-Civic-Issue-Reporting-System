@@ -47,4 +47,31 @@ catch(e){
   }
 
 
+
+  //for login
+ static Future <bool>logIn({
+  required String username,
+  required String password,
+  required bool isAdministrator
+ }) async{
+  try{
+    final response=await http.post(
+      Uri.parse("$url/auth/login"),
+      headers: {"Content-Type":"application/json"},
+      body: jsonEncode({"username":username,
+                      "password": password, 
+                      "role":isAdministrator,
+      }
+      ),
+
+    );
+
+    if(response.statusCode==200){
+      final data=jsonDecode(response.body);
+
+    }
+  }
+ }
+
+
 }
