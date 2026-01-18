@@ -81,7 +81,8 @@ def login():
              {
                   "message":"Login Sucessful!",
                   "token":access_token,
-                  "username":username
+                  "username":username,
+                  "is_admin":user.is_administrator,
 
              }
         ),200
@@ -163,6 +164,7 @@ def whoami():
           {
                "username":user.username,
                "id":user.id,
-               "message":"User is authenticated!"
+               "message":"User is authenticated!",
+               "is_administrator":user.is_administrator,
           }
      ),200

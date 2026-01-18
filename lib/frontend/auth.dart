@@ -71,10 +71,12 @@ catch(e){
     if(response.statusCode==200){
       final data=jsonDecode(response.body);
       String token=data["token"];
+      String is_admin=data["is_admin"];
 
       final pref=await SharedPreferences.getInstance();
       await pref.setString("access_token",token);
       await pref.setString("username", username);
+      await pref.setString("is_administrator",is_admin);
       return true;
 
     }
@@ -133,6 +135,14 @@ catch(e){
 
 
 //for logout====this comment seems vibecoded-but it ain't ;)
+static Future<void> logout() async{
+  final prefs=await SharedPreferences.getInstance();
+  await prefs.remove("access_token");
+  await prefs.remove("username");
+  await prefs.remove("is_administrator");
+
+} 
+
 
 
 
