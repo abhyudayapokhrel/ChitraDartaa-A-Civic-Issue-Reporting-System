@@ -96,7 +96,7 @@ def create_access_token(user):
 
      payload={
           "username":user,
-          "exp":datetime.now(timezone.utc)+timedelta(hours=24),
+          "exp":datetime.now(timezone.utc)+timedelta(hours=44),
           "iat":datetime.now(timezone.utc)
      }
 

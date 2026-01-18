@@ -9,7 +9,8 @@ class AuthService{
   //this will call sign up function
   static Future<bool>signUp({
     required String username,
-    required String password
+    required String password,
+    required String email,
   }) async{
 
     //first we try
@@ -19,7 +20,8 @@ try{
     headers: {"Content-Type":"application/json"},
     body: jsonEncode({
       "username":username,
-      "password":password
+      "password":password,
+      "email":email
     }),
 
   );
@@ -52,7 +54,7 @@ catch(e){
  static Future <bool>logIn({
   required String username,
   required String password,
-  required bool isAdministrator
+  required bool isAdministrator,
  }) async{
   try{
     final response=await http.post(
@@ -68,10 +70,70 @@ catch(e){
 
     if(response.statusCode==200){
       final data=jsonDecode(response.body);
+      String token=data["token"];
+
+      final pref=await SharedPreferences.getInstance();
+      await pref.setString("access_token",token);
+      await pref.setString("username", username);
+      return true;
 
     }
+
+    else if (response.statusCode==401){
+      throw Exception("Invalid username!! or password");
+    }
+    else{
+      final data=jsonDecode(response.body);
+      throw Exception(data["error"]??"Invalid issue with the login");
+    }
+
+  }
+
+  catch(e){
+    throw Exception("Network error:${e.toString()}");
   }
  }
+
+
+ //to store user info and access we do following
+ static Future <Map<String, dynamic>> getCurrentUser() async{
+  try{
+    final prefs=await SharedPreferences.getInstance();
+    String? token=prefs.getString("access_token");
+    if(token==null){
+      throw Exception("No token found! Login again!");
+    }
+    final response=await http.get(
+      Uri.parse("$url/auth/whoami"),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+
+    );
+    if(response.statusCode==200){
+      return jsonDecode(response.body);
+    }
+    else if(response.statusCode==401){
+      await logout();// not written this function yet will do it later
+      throw Exception("Session has expired, login again!");
+    }
+    else{
+      throw Exception("Failed to get the user!");
+    }
+  
+
+
+  }
+
+  catch(e){
+    throw Exception("Error:${e.toString()}");
+  }
+ }
+
+
+
+//for logout====this comment seems vibecoded-but it ain't ;)
+
 
 
 }
