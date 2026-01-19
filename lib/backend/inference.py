@@ -28,6 +28,7 @@ def infer_image():
         #  Convert base64 → image
         image = base64_to_image(image_base64)
 
+
         #  Run AI inference
         segmented_img, confidence = run_inference(image)
 
@@ -46,7 +47,8 @@ def infer_image():
             location=location,
             segmented_image=segmented_base64,
             confidence_score=confidence,
-            is_resolved=False
+            is_resolved=False,
+            filepath = filepath
         )
         db.session.add(report)
         db.session.commit()

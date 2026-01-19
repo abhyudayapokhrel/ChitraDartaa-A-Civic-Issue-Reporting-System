@@ -11,3 +11,4 @@ class IssueReport(db.Model):
     confidence_score = db.Column(db.Float, nullable=False)
     is_resolved = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    filepath = db.Column(db.String(200), nullable = False)

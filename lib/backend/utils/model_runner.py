@@ -3,29 +3,43 @@ import numpy as np
 from PIL import Image
 
 # Load your models once
+ISSUE_NON_ISSUE_PATH1 = "models/issue_non_issue_model1_20split_96.07accuracy.keras"
+ISSUE_NON_ISSUE_PATH2 = "models/issue_non_issue_model2_40split_96.76accuracy.keras"
 CLASS_MODEL_PATH = "potholes-garbage-classifier.h5"
 SEG_MODEL_PATH = "segmentation_model.h5"
 
+issue_model1 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH1)
+issue_model2 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH2)
 class_model = tf.keras.models.load_model(CLASS_MODEL_PATH)
 seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
 
-# Preprocessing functions
-def preprocess_class(image: Image.Image):
-    # Resize and normalize as your model expects
-    img = image.resize((224, 224))
-    arr = np.array(img) / 255.0
-    if arr.ndim == 2:  # grayscale → RGB
-        arr = np.stack([arr]*3, axis=-1)
-    arr = np.expand_dims(arr, 0)  # batch dimension
-    return arr
+# # Preprocessing functions
+# def preprocess_class(image: Image.Image):
+#     # Resize and normalize as your model expects
+#     img = image.resize((224, 224))
+#     arr = np.array(img) / 255.0
+#     if arr.ndim == 2:  # grayscale → RGB
+#         arr = np.stack([arr]*3, axis=-1)
+#     arr = np.expand_dims(arr, 0)  # batch dimension
+#     return arr
 
-def preprocess_seg(image: Image.Image):
-    img = image.resize((256, 256)) 
-    arr = np.array(img) / 255.0
-    if arr.ndim == 2:  # grayscale → RGB
-        arr = np.stack([arr]*3, axis=-1)
-    arr = np.expand_dims(arr, 0)  # batch dimension
-    return arr
+# def preprocess_seg(image: Image.Image):
+#     img = image.resize((256, 256)) 
+#     arr = np.array(img) / 255.0
+#     if arr.ndim == 2:  # grayscale → RGB
+#         arr = np.stack([arr]*3, axis=-1)
+#     arr = np.expand_dims(arr, 0)  # batch dimension
+#     return arr
+
+def predict_for_single_image(model, img_path):
+    img=tf.keras.utils.load_img(img_path, target_size=(224,224))
+    img_array=tf.keras.utils.img_to_array(img)
+    img_array=np.expand_dims(img_array, axis=0)
+    prediction=model.predict(img_array)
+    probability=prediction[0][0]
+    if probability>0.5:
+        return 1;
+    return 0;
 
 def run_inference(image: Image.Image):
     """
@@ -34,16 +48,20 @@ def run_inference(image: Image.Image):
         segmented_image: PIL Image
         confidence_score: float (from classification model)
     """
+    #Issue or non issue classify
 
-    # 1️⃣ Classification
-    class_input = preprocess_class(image)
-    class_pred = class_model.predict(class_input)
+    issue_pred1 = predict_for_single_image(model = issue_model1, image)
+    
+
+    #pothole or garbage classify
+    # class_input = preprocess_class(image)
+    class_pred = class_model.predict(image)
     confidence_score = float(np.max(class_pred))
     predicted_class = int(np.argmax(class_pred))
 
-    # 2️⃣ Segmentation
-    seg_input = preprocess_seg(image)
-    seg_pred = seg_model.predict(seg_input)  # shape = (1,H,W,num_classes) or (1,H,W,1)
+    #Segmented image block
+    # seg_input = preprocess_seg(image)
+    seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
     
     # Convert seg_pred to mask
     seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
