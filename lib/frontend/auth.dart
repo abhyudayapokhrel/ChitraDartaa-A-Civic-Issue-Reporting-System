@@ -72,13 +72,13 @@ catch(e){
     if(response.statusCode==200){
       final data=jsonDecode(response.body);
       String token=data["token"];
-      String is_admin=data["is_admin"];
-      String username=data["user"];
+      String is_admin=data["is_admin"].toString();
+      String username=data["username"];
 
       final pref=await SharedPreferences.getInstance();
       await pref.setString("access_token",token);
       await pref.setString("user", username);
-      await pref.setString("is_administrator",is_admin);
+      await pref.setString("is_administrator",is_admin.toString());
       await pref.setString("email",email);
       return true;
 
