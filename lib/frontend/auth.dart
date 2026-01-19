@@ -146,7 +146,7 @@ static Future<void> logout() async{
   await prefs.remove("email");
 
 } 
-static Future<bool> isLoggedIn()async{
+static Future<bool> isLoggedIn()async{ //loggedin ==== locked in , ain't vibecoded *wink* *wink*
   final pref=await SharedPreferences.getInstance();
   return pref.containsKey("access_token");
 }
