@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 import os
 from extension import db
 load_dotenv()
-
+import models
+from inference import inference_bp
 #creating dbase
 
 
@@ -24,6 +25,9 @@ def create_app():
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "OPTIONS"])
 
+
+    #Registering the inference blueprint here
+    app.register_blueprint(inference_bp)
 
     #here adding this to add other backend files for inference adding this so i can add later into the future, fuck you mahesh
     from auth import auth_bp

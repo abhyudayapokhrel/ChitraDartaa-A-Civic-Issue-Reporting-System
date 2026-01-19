@@ -21,7 +21,7 @@ class _MyRegisterState extends State<MyRegister> {
   // Password visibility
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-bool isLoading=false;
+  bool isLoading=false;
 
 void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -62,8 +62,8 @@ Future<void> _handleSignup() async{
     return;
   }
   
-  if (passwordController.text.length < 6) {
-    _showError('Password must be at least 6 characters');
+  if (passwordController.text.length < 8) {
+    _showError('Password must be at least 8 characters');
     return;
   }
   
