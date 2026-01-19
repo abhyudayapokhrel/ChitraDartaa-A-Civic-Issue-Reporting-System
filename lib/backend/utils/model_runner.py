@@ -31,15 +31,17 @@ seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
 #     arr = np.expand_dims(arr, 0)  # batch dimension
 #     return arr
 
-def predict_for_single_image(model, img_path):
-    img=tf.keras.utils.load_img(img_path, target_size=(224,224))
+def predict_for_single_image(model, img_input):
+    if isinstance(img_input, str):#this is for when we send image from dir
+        img = tf.keras.utils.load_img(img_input, target_size=(224, 224))
+    else:
+        img = img_input.resize((224, 224))#this is for when we send the image directly
     img_array=tf.keras.utils.img_to_array(img)
     img_array=np.expand_dims(img_array, axis=0)
     prediction=model.predict(img_array)
     probability=prediction[0][0]
-    if probability>0.5:
-        return 1;
-    return 0;
+
+    return probability
 
 def run_inference(image: Image.Image):
     """
@@ -50,9 +52,14 @@ def run_inference(image: Image.Image):
     """
     #Issue or non issue classify
 
-    issue_pred1 = predict_for_single_image(model = issue_model1, image)
-    
-
+    conf1 = predict_for_single_image(model = issue_model1,img_input= image)
+    conf2 = predict_for_single_image(model = issue_model1,img_input= image)
+    combined_agreement=(2*conf1*conf2)/(conf1+conf2)
+    if combined_agreement:
+        label="Natural Road"
+    else:
+        ...
+        #pratik mula tmro model yeta run garnu
     #pothole or garbage classify
     # class_input = preprocess_class(image)
     class_pred = class_model.predict(image)
