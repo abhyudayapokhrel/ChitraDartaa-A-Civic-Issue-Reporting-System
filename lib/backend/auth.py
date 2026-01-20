@@ -32,7 +32,10 @@ def signup():
     username=data["username"]
     password=data["password"]
     email=data["email"]
+    role=data["is_admin"]=="True"
+    
 
+     
 
     #to check if the same username or email exist we check in the dbase
     existing_username=User.query.filter_by(username=username).first()
@@ -41,7 +44,7 @@ def signup():
         return jsonify({"error":"User or Email exists!"}),409 #just adding error code for easier use 
     
     password_hash=generate_password_hash(password=password)
-    new_user=User(username=username,email=email,password_hash=password_hash,is_administrator=False)
+    new_user=User(username=username,email=email,password_hash=password_hash,is_administrator=role)
 
     #adding the user into the dbase
     try:
