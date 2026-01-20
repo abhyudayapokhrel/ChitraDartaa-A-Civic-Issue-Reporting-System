@@ -3,15 +3,15 @@ import numpy as np
 from PIL import Image
 
 # Load your models once
-ISSUE_NON_ISSUE_PATH1 = "models/issue_non_issue_model1_20split_96.07accuracy.keras"
-ISSUE_NON_ISSUE_PATH2 = "models/issue_non_issue_model2_40split_96.76accuracy.keras"
-CLASS_MODEL_PATH = "potholes-garbage-classifier.h5"
-SEG_MODEL_PATH = "segmentation_model.h5"
+# ISSUE_NON_ISSUE_PATH1 = "models/issue_non_issue_model1_20split_96.07accuracy.keras"
+# ISSUE_NON_ISSUE_PATH2 = "models/issue_non_issue_model2_40split_96.76accuracy.keras"
+# CLASS_MODEL_PATH = "potholes-garbage-classifier.h5"
+# SEG_MODEL_PATH = "segmentation_model.h5"
 
-issue_model1 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH1)
-issue_model2 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH2)
-class_model = tf.keras.models.load_model(CLASS_MODEL_PATH)
-seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
+# issue_model1 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH1)
+# issue_model2 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH2)
+# # class_model = tf.keras.models.load_model(CLASS_MODEL_PATH)
+# # seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
 
 # # Preprocessing functions
 # def preprocess_class(image: Image.Image):
@@ -52,26 +52,26 @@ def run_inference(image: Image.Image):
     """
     #Issue or non issue classify
 
-    conf1 = predict_for_single_image(model = issue_model1,img_input= image)
-    conf2 = predict_for_single_image(model = issue_model1,img_input= image)
-    combined_agreement=(2*conf1*conf2)/(conf1+conf2)
-    if combined_agreement:
-        label="Natural Road"
-    else:
-        ...
-        #pratik mula tmro model yeta run garnu
-    #pothole or garbage classify
-    # class_input = preprocess_class(image)
-    class_pred = class_model.predict(image)
-    confidence_score = float(np.max(class_pred))
-    predicted_class = int(np.argmax(class_pred))
+    # conf1 = predict_for_single_image(model = issue_model1,img_input= image)
+    # conf2 = predict_for_single_image(model = issue_model1,img_input= image)
+    # combined_agreement=(2*conf1*conf2)/(conf1+conf2)
+    # if combined_agreement:
+    #     label="Natural Road"
+    # else:
+    #     ...
+    #     #pratik mula tmro model yeta run garnu
+    # #pothole or garbage classify
+    # # class_input = preprocess_class(image)
+    # class_pred = class_model.predict(image)
+    # confidence_score = float(np.max(class_pred))
+    # predicted_class = int(np.argmax(class_pred))
 
-    #Segmented image block
-    # seg_input = preprocess_seg(image)
-    seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
+    # #Segmented image block
+    # # seg_input = preprocess_seg(image)
+    # seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
     
-    # Convert seg_pred to mask
-    seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
-    segmented_image = Image.fromarray(seg_mask)
+    # # Convert seg_pred to mask
+    # seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
+    # segmented_image = Image.fromarray(seg_mask)
 
-    return segmented_image, confidence_score
+    return "segmented_image, confidence_score"
