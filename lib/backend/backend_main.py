@@ -26,12 +26,15 @@ def create_app():
      methods=["GET", "POST", "OPTIONS"])
 
 
-    #Registering the inference blueprint here
-    app.register_blueprint(inference_bp)
 
     #here adding this to add other backend files for inference adding this so i can add later into the future, fuck you mahesh
     from auth import auth_bp
+    from admin_endpoint import admin_bp
+    from inference import inference_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(inference_bp)
+
 
 
     with app.app_context():
