@@ -232,3 +232,7 @@ desktop.ini
 # checkpoints/
 
 # End of .gitignore
+
+enve_chitradarta
+
+lib\backend\utils\models

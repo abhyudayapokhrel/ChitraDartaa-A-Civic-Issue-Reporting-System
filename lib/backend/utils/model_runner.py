@@ -1,17 +1,27 @@
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+import os
+
+#for commit purposes.
 
 # Load your models once
 ISSUE_NON_ISSUE_PATH1 = "models/issue_non_issue_model1_20split_96.07accuracy.keras"
 ISSUE_NON_ISSUE_PATH2 = "models/issue_non_issue_model2_40split_96.76accuracy.keras"
 CLASS_MODEL_PATH = "potholes-garbage-classifier.h5"
-SEG_MODEL_PATH = "segmentation_model.h5"
+# SEG_MODEL_PATH = "segmentation_model.h5"
 
-issue_model1 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH1)
-issue_model2 = tf.keras.models.load_model(ISSUE_NON_ISSUE_PATH2)
-class_model = tf.keras.models.load_model(CLASS_MODEL_PATH)
-seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
+path = os.path.dirname(os.path.realpath(__file__))
+filepath1 = os.path.join(path,"models",ISSUE_NON_ISSUE_PATH1)
+filepath2 = os.path.join(path,"models",ISSUE_NON_ISSUE_PATH2)
+filepath3 = os.path.join(path,"models",CLASS_MODEL_PATH)
+
+
+issue_model1 = tf.keras.models.load_model(filepath1)
+issue_model2 = tf.keras.models.load_model(filepath2)
+class_model = tf.keras.models.load_model(filepath3)
+# seg_model = tf.keras.models.load_model(SEG_MODEL_PATH)
+
 
 # # Preprocessing functions
 # def preprocess_class(image: Image.Image):
@@ -63,15 +73,17 @@ def run_inference(image: Image.Image):
     #pothole or garbage classify
     # class_input = preprocess_class(image)
     class_pred = class_model.predict(image)
-    confidence_score = float(np.max(class_pred))
+    combined_agreement = float(np.max(class_pred))
     predicted_class = int(np.argmax(class_pred))
 
     #Segmented image block
     # seg_input = preprocess_seg(image)
-    seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
+    # seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
     
-    # Convert seg_pred to mask
-    seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
-    segmented_image = Image.fromarray(seg_mask)
+    # # Convert seg_pred to mask
+    # seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
+    # segmented_image = Image.fromarray(seg_mask)
 
-    return segmented_image, confidence_score
+    # return segmented_image, confidence_score
+
+    return image, combined_agreement
