@@ -1,9 +1,9 @@
 # Define the payload
 $body = @{
-    username = "maheshpanta_admin"
-    email    = "panta@admin.com"
+    username = "maheshpanta1_admin"
+    email    = "panta1@admin.com"
     password = "12345678"
-    is_admin = $true # Use $true (boolean) instead of "True" (string)
+    is_admin = "True" # Use $true (boolean) instead of "True" (string)
 } | ConvertTo-Json
 
 # Execute the POST request
