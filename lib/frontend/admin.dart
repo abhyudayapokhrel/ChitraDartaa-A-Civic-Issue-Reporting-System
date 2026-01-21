@@ -487,6 +487,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:chitradartaa/frontend/auth.dart';
 
 class Myadministrator extends StatefulWidget {
   const Myadministrator({super.key});
@@ -496,6 +497,20 @@ class Myadministrator extends StatefulWidget {
 }
 
 class _MyWidgetState extends State<Myadministrator> {
+   @override
+void initState() {
+  super.initState();
+  _checkAuth();
+} //for bypassing
+
+Future<void> _checkAuth() async {
+  bool loggedIn = await AuthService.isLoggedIn();
+  if (!loggedIn) {
+    // If no token is found, they are trespassing!
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+}
   @override
   Widget build(BuildContext context) {
     return  Container(

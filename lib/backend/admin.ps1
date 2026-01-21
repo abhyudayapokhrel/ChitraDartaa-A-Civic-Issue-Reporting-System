@@ -1,7 +1,7 @@
 # Define the payload
 $body = @{
-    username = "maheshpanta1_admin"
-    email    = "panta1@admin.com"
+    username = "maheshpanta2_admin"
+    email    = "panta2@admin.com"
     password = "12345678"
     is_admin = "True" # Use $true (boolean) instead of "True" (string)
 } | ConvertTo-Json
@@ -14,4 +14,12 @@ $params = @{
     Body        = $body
 }
 
-Invoke-RestMethod @params
+try {
+    Invoke-RestMethod @params
+} catch {
+    $_.Exception.Response.GetResponseStream() | ForEach-Object {
+        $reader = New-Object System.IO.StreamReader($_)
+        $reader.ReadToEnd()
+    }
+}
+Write-Host "Action completed successfully!" -ForegroundColor Green

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';//to store tokens
 
 
 class AuthService{
+
   static const String url="https://azoic-corinna-unreconcilably.ngrok-free.dev";
 
   //this will call sign up function
@@ -163,3 +164,6 @@ static Future<bool>isAdmin()async{
 
 
 }
+
+//Added ngrok
+//Good morning guys
