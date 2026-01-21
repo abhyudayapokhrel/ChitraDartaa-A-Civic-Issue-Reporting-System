@@ -78,7 +78,7 @@ def run_inference(image: Image.Image):
     class_pred = class_model.predict(image)
     combined_agreement = float(np.max(class_pred))
     predicted_class = int(np.argmax(class_pred))
-
+    #this is where 
     #Segmented image block
     # seg_input = preprocess_seg(image)
 

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';//to store tokens
 
 
 class AuthService{
-  static const String url="http://Localhost:6969";
+  static const String url="https://azoic-corinna-unreconcilably.ngrok-free.dev";
 
   //this will call sign up function
   static Future<bool>signUp({
