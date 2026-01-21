@@ -56,40 +56,23 @@ def predict_for_single_image(model, img_input):
     return probability
 
 def run_inference(image: Image.Image):
-    """
-    image: PIL Image
-    returns:
-        segmented_image: PIL Image
-        confidence_score: float (from classification model)
-    """
-    #Issue or non issue classify
+    # 1. Issue or non-issue logic
+    conf1 = predict_for_single_image(model=issue_model1, img_input=image)
+    conf2 = predict_for_single_image(model=issue_model2, img_input=image)
 
-
-    conf1 = predict_for_single_image(model = issue_model1,img_input= image)
-    conf2 = predict_for_single_image(model = issue_model1,img_input= image)
-    combined_agreement=(2*conf1*conf2)/(conf1+conf2)
-    if combined_agreement:
-        label="Natural Road"
-    else:
-        ...
-        #pratik mula tmro model yeta run garnu
-    #pothole or garbage classify
-    # class_input = preprocess_class(image)
-    class_pred = class_model.predict(image)
-    combined_agreement = float(np.max(class_pred))
-    predicted_class = int(np.argmax(class_pred))
-    #this is where 
-    #Segmented image block
-    # seg_input = preprocess_seg(image)
-
-    # seg_pred = seg_model.predict(image)  # shape = (1,H,W,num_classes) or (1,H,W,1)
+    combined_agreement = (2 * conf1 * conf2) / (conf1 + conf2) if (conf1 + conf2) > 0 else 0
     
-    # # Convert seg_pred to mask
-    # seg_mask = np.argmax(seg_pred[0], axis=-1).astype(np.uint8) * 255  # shape (H,W)
-    # segmented_image = Image.fromarray(seg_mask)
+    # 2. Pothole or Garbage Classify
 
+    img_resized = image.resize((224, 224))
+    img_array = tf.keras.utils.img_to_array(img_resized)
+    img_array = np.expand_dims(img_array, axis=0)
+    
+    # Please don't crash now
+    class_pred = class_model.predict(img_array) 
+    
+    confidence_score = float(np.max(class_pred))
+    predicted_class = int(np.argmax(class_pred))
 
-    # return segmented_image, confidence_score
-
-    return image, combined_agreement
+    return image, confidence_score
 

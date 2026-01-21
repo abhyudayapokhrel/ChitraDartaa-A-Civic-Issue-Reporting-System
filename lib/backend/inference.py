@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from extension import db
-from .models import IssueReport
-from .utils.image_utils import base64_to_image, image_to_base64
-from .utils.model_runner import run_inference
+from models import IssueReport
+from utils.image_utils import base64_to_image, image_to_base64
+from utils.model_runner import run_inference
 import os
 import time
 from auth import token_required
@@ -21,7 +21,7 @@ def infer_image():
         return jsonify({"error": "No JSON received"}), 400
 
     try:
-        username = data[username] #try request.user.username once
+        username = data["username"] #try request.user.username once
         location = data["location"]
         image_base64 = data["image"]
 
@@ -58,7 +58,7 @@ def infer_image():
             "message": "Inference successful",
             "segmented_image": segmented_base64,
             "confidence_score": confidence,
-            "report_id": report.id,
+            "report_id": report.issue_id,
             "saved_file": filepath
         }), 200
 
