@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from extension import db
-from models import IssueReport
-from utils.image_utils import base64_to_image, image_to_base64
-from utils.model_runner import run_inference
+from .models import IssueReport
+from .utils.image_utils import base64_to_image, image_to_base64
+from .utils.model_runner import run_inference
 import os
 import time
 from auth import token_required
@@ -12,8 +12,8 @@ inference_bp = Blueprint("inference", __name__, url_prefix="/api/infer")
 UPLOAD_FOLDER = "uploaded_images"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@token_required
 @inference_bp.route("", methods=["POST"])
+@token_required
 def infer_image():
     data = request.get_json()
 
@@ -21,7 +21,7 @@ def infer_image():
         return jsonify({"error": "No JSON received"}), 400
 
     try:
-        username = data["username"]
+        username = data[username] #try request.user.username once
         location = data["location"]
         image_base64 = data["image"]
 
