@@ -16,7 +16,7 @@ path = os.path.dirname(os.path.realpath(__file__))
 filepath1 = os.path.join(path,"models",ISSUE_NON_ISSUE_PATH1)
 filepath2 = os.path.join(path,"models",ISSUE_NON_ISSUE_PATH2)
 filepath3 = os.path.join(path,"models",CLASS_MODEL_PATH)
-
+CLASSES_TO_USE = ['Garbage', 'Potholes', 'NoIssue']
 
 issue_model1 = tf.keras.models.load_model(filepath1)
 issue_model2 = tf.keras.models.load_model(filepath2)
@@ -62,17 +62,20 @@ def run_inference(image: Image.Image):
 
     combined_agreement = (2 * conf1 * conf2) / (conf1 + conf2) if (conf1 + conf2) > 0 else 0
     
-    # 2. Pothole or Garbage Classify
+    if combined_agreement>0.5:
 
-    img_resized = image.resize((224, 224))
-    img_array = tf.keras.utils.img_to_array(img_resized)
-    img_array = np.expand_dims(img_array, axis=0)
-    
-    # Please don't crash now
-    class_pred = class_model.predict(img_array) 
-    
-    confidence_score = float(np.max(class_pred))
-    predicted_class = int(np.argmax(class_pred))
 
-    return image, confidence_score
+        img_resized = image.resize((224, 224))
+        img_array = tf.keras.utils.img_to_array(img_resized)
+        img_array = np.expand_dims(img_array, axis=0)
+        
+        # Please don't crash now
+        class_pred = class_model.predict(img_array) 
+        global CLASSES_TO_USE
+        combined_agreement = float(np.max(class_pred))
+        predicted_class = CLASSES_TO_USE[int(np.argmax(class_pred))]
+        
+            
+
+    return image, combined_agreement
 
