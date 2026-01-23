@@ -36,7 +36,7 @@ def infer_image():
         confidence=float(confidence)
         #  Convert segmented image → base64 (for DB + frontend)
         segmented_base64 = image_to_base64(segmented_img)
-
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         # Save segmented image locally
         timestamp_int = int(time.time())
         timestamp = datetime.fromtimestamp(timestamp_int)
@@ -52,7 +52,7 @@ def infer_image():
             location=location,
             segmented_image=segmented_base64,
             confidence_score=confidence,
-            is_resolved=False,
+            status="reported",
             filepath = filepath,
             created_at=timestamp
         )

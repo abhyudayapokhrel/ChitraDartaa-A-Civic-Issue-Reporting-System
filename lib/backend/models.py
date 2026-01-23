@@ -9,7 +9,7 @@ class IssueReport(db.Model):
     location = db.Column(db.JSON, nullable=False)
     segmented_image = db.Column(db.Text, nullable=False)  # base64
     confidence_score = db.Column(db.Float, nullable=False)
-    # is_resolved = db.Column(db.Boolean, default=False)
+
     status =db.Column(db.String(20), default = "reported")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     filepath = db.Column(db.String(200), nullable = False)
