@@ -165,12 +165,17 @@ static Future<bool>isAdmin()async{
 }
 
 
-//For admin enpoint
+//For admin endpoint
 static Future<List<Map<String, dynamic>>> fetchIssues() async {
     try {
+      final token = await getToken();
+      if(token == null){
+        throw Exception("No token found.");
+      }
       final response = await http.get(
-        Uri.parse('$url/admin/reports'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$url/api/admin/reports'),
+        headers: {'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -187,12 +192,15 @@ static Future<List<Map<String, dynamic>>> fetchIssues() async {
 
   static Future<bool> updateIssueStatus(int id, String status) async {
     try {
+      final token = await getToken();
+      if (token == null) return false;
+
       final response = await http.patch(
-        Uri.parse('$url/admin/reports/$id'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('$url/api/admin/reports/$id'),
+        headers: {'Content-Type': 'application/json', 
+        'Authorization': 'Bearer $token'},
         body: json.encode({
           'status': status,
-          'is_resolved': status == 'resolved'
         }),
       );
 

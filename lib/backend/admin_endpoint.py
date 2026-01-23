@@ -23,14 +23,13 @@ def get_reports():
             "description": "AI detected issue", #could be better, nvm
             "reporter": report.username,
             "location": report.location,
-            "status": "resolved" if report.is_resolved else "unresolved", 
+            "status": report.status, 
             "confidence_score": report.confidence_score,
             "segmented_image": report.segmented_image,
             "timestamp": report.created_at.isoformat()
         })
 
     return jsonify({
-        "count": len(data),
         "reports": data
     }), 200
 
@@ -41,12 +40,9 @@ def update_report(report_id):
     
     data = request.get_json()
     
-    if "is_resolved" in data:
-        report.is_resolved = data["is_resolved"]
+    if "status" in data:
+        report.status = data["status"]
     
-    # if "status" in data:
-    #     # Not sure, should I add status in the acutal db and update that or just remove this entire if block
-    #     pass
     
     db.session.commit()
     
