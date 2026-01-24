@@ -215,9 +215,12 @@ class _MyCitizenState extends State<MyCitizen> {
           "Authorization": "Bearer $token",
         },
         body: jsonEncode({
-          "username": username, // Backend expects this
+          "username": username,
           "image": base64Image,
-          "location": _currentAddress,
+          "location": {
+            "lat": _latitude, 
+            "lng": _longitude,
+          },
         }),
       ).timeout(
         const Duration(seconds: 30),
@@ -281,14 +284,95 @@ class _MyCitizenState extends State<MyCitizen> {
     );
   }
 
-  void _submitReport() {
-    _showSnackBar("Report Submitted Successfully", Colors.green);
+Future<void> _submitReport() async {
+  // Validate inputs
+  if (_selectedImage == null) {
+    _showSnackBar("Please select an image first", Colors.orange);
+    return;
+  }
+
+  if (_latitude == null || _longitude == null) {
+    _showSnackBar("Please enable location first", Colors.orange);
+    return;
+  }
+
+  try {
+    // Show loading indicator
     setState(() {
-      _selectedImage = null;
-      _descriptionController.clear();
-      _selectedIndex = 1;
+      _isLoading = true; // Add this bool to your state if you don't have it
+    });
+
+    // Get user info
+    final token = await AuthService.getToken();
+    final username = await AuthService.getUsername(); // You need to implement this
+    
+    if (token == null || username == null) {
+      _showSnackBar("Please login first", Colors.red);
+      return;
+    }
+
+    // Convert image to base64
+    final bytes = await _selectedImage!.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    // Prepare request data
+    final reportData = {
+      'username': username,
+      'image': base64Image,
+      'location': {
+        'lat': _latitude,
+        'lng': _longitude
+      }
+    };
+
+    print('Submitting report to: ${AuthService.url}/api/infer');
+
+    // Send to backend
+    final response = await http.post(
+      Uri.parse('${AuthService.url}/api/infer'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: json.encode(reportData),
+    );
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      
+      _showSnackBar(
+        "Report Submitted Successfully! Label: ${result['label']}", 
+        Colors.green
+      );
+      
+      // Clear form
+      setState(() {
+        _selectedImage = null;
+        _descriptionController.clear();
+        _selectedIndex = 1; // Navigate to reports tab
+        _isLoading = false;
+      });
+    } else {
+      final error = json.decode(response.body);
+      _showSnackBar(
+        "Failed to submit: ${error['error']}", 
+        Colors.red
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  } catch (e) {
+    print("Error submitting report: $e");
+    _showSnackBar("Error: $e", Colors.red);
+    setState(() {
+      _isLoading = false;
     });
   }
+}
 
   @override
   Widget build(BuildContext context) {

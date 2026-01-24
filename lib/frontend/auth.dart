@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';//to store tokens
 
 class AuthService{
 
-  static const String url="https://wrongly-unapprovable-lizeth.ngrok-free.dev";
+  static const String url="http://127.0.0.1:6969";
 
   //this will call sign up function
   static Future<bool>signUp({
@@ -50,6 +50,7 @@ catch(e){
 }
 
   }
+
 
 
 
@@ -101,6 +102,17 @@ catch(e){
   }
  }
 
+//getUsername
+static Future<String?> getUsername() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+
+    return prefs.getString("user"); 
+  } catch (e) {
+    print('Error reading username: $e');
+    return null;
+  }
+}
 
  //to store user info and access we do following
  static Future <Map<String, dynamic>> getCurrentUser() async{
