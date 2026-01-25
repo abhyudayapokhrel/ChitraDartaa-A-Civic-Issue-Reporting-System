@@ -304,7 +304,7 @@ Future<void> _submitReport() async {
 
     // Get user info
     final token = await AuthService.getToken();
-    final username = await AuthService.getUsername(); // You need to implement this
+    final username = await AuthService.getUsername(); 
     
     if (token == null || username == null) {
       _showSnackBar("Please login first", Colors.red);
@@ -690,3 +690,5 @@ Future<void> _submitReport() async {
     );
   }
 }
+
+// The gods have blessed us.
