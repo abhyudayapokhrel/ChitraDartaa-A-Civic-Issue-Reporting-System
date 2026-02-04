@@ -200,7 +200,7 @@ static Future<List<Map<String, dynamic>>> fetchIssues() async {
       print('Error fetching issues: $e');
       rethrow;
     }
-  }
+  } 
 
   static Future<bool> updateIssueStatus(int id, String status) async {
     try {
