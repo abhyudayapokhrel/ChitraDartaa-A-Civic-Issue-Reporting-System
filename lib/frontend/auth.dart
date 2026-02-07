@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';//to store tokens
 
 class AuthService{
 
-  static const String url="https://azoic-corinna-unreconcilably.ngrok-free.dev";
+  static const String url="http://127.0.0.1:6969";
 
   //this will call sign up function
   static Future<bool>signUp({
@@ -222,5 +222,30 @@ static Future<List<Map<String, dynamic>>> fetchIssues() async {
       return false;
     }
   }
+static Future<List<Map<String, dynamic>>> fetchUserReports() async {
+  final prefs = await SharedPreferences.getInstance();
+  final username = prefs.getString("user");
+  print("FLUTTER DEBUG: Sending username: $username");
+  final token = await getToken();
+  if (username == null) {
+     print("Error: Username is null in SharedPreferences");
+     return [];
+  }
+
+final response = await http.post(
+    Uri.parse("$url/api/citizenreport"),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({"username": username}),
+  );
+
+  if (response.statusCode == 200) {
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  }
+  return [];
+  throw Exception("Failed to load reports");
+}
 }
 

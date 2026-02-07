@@ -16,14 +16,23 @@ UPLOAD_FOLDER = "uploaded_images"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-@citizen_report.route("",methods=["GET"])
+@citizen_report.route("",methods=["POST"])
 @token_required
 def citizenreport():
     data=request.get_json()
+    username = data.get("username")
+    print(f"DEBUG: Fetching reports for user: {username}")
+
+    if not username:
+        # If we got a token but no username in body, try to use the token's identity
+        username = getattr(request, 'user', None)
+        print(f"DEBUG: Falling back to Token user: {username}")
+
+    if not username:
+        return jsonify({"error": "No username provided"}), 400
+
     if not data:
         return jsonify({"error":"No json recieved!"});
-# username then we filter issues with users then return json with the report
-    username=data["username"];
     reports=IssueReport.query.filter_by(username=username).all()
     return jsonify([r.to_dict() for r in reports]),200
     

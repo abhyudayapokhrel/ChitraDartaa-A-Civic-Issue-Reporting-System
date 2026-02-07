@@ -8,6 +8,8 @@ import cv2
 
 
 # Load your models once
+#ISSUE_NON_ISSUE_PATH1 = "issue_detector_model.keras"
+#CLASS_MODEL_PATH = "gar_pot_model.keras"
 
 ISSUE_NON_ISSUE_PATH1= "3rdmodelwithbetternoissueaccuracy.keras"
 ISSUE_NON_ISSUE_PATH2= "issue_nonissue_detector_tl.h5"

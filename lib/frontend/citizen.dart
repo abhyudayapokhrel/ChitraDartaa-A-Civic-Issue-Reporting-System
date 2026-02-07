@@ -8,6 +8,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // Added for username access
 import 'package:flutter/foundation.dart' show kIsWeb; //for platform check
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
 
 class MyCitizen extends StatefulWidget {
   const MyCitizen({super.key});
@@ -26,6 +29,9 @@ class _MyCitizenState extends State<MyCitizen> {
   double _confidenceScore = 0.0;
   String _prediction = "Awaiting image...";
   bool _isLoading = true;
+  bool _isFetching = false;//for notifications
+  int _refreshCounter = 0;
+
 
   // NEW: Configurable backend URL - CHANGE THIS BASED ON YOUR SETUP
   static const String backendUrl = AuthService.url; // Using ngrok URL from AuthService
@@ -40,7 +46,13 @@ class _MyCitizenState extends State<MyCitizen> {
       _testBackendConnection(); // NEW: Test connection on startup
     });
   }
-
+void _refreshData() {
+  setState(() {
+    _refreshCounter++;
+    // in the My Impact tab to re-run its future.
+    print("Refreshing user reports... Sequence: $_refreshCounter" );
+  });
+}
   // NEW: Test backend connectivity
   Future<void> _testBackendConnection() async {
     try {
@@ -403,6 +415,22 @@ Future<void> _submitReport() async {
         foregroundColor: Colors.black,
         actions: [
           IconButton(
+icon: const Icon(Icons.notifications_active_outlined),
+  onPressed: _isFetching ? null : () async { // Disables button while fetching
+    setState(() {
+      _isFetching = true;
+      _selectedIndex = 1; // Jump to impact tab
+    });
+
+    _refreshData();// to update the Future
+    
+    // artificial delay for the future
+    await Future.delayed(const Duration(seconds: 3)); 
+    
+    if (mounted) setState(() => _isFetching = false);
+  },   
+  ),
+          IconButton(
             icon: const Icon(Icons.logout, color: Colors.redAccent),
             onPressed: () async {
               await AuthService.logout();
@@ -417,7 +445,6 @@ Future<void> _submitReport() async {
         children: [
           _buildReportTab(),
           _buildContributionsTab(),
-          _buildSocialCircleTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -433,10 +460,6 @@ Future<void> _submitReport() async {
           BottomNavigationBarItem(
             icon: Icon(Icons.fact_check_outlined),
             label: "My Impact",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups_outlined),
-            label: "Social",
           ),
         ],
       ),
@@ -459,7 +482,7 @@ Future<void> _submitReport() async {
           GestureDetector(
             onTap: () => _pickImage(ImageSource.camera),
             child: Container(
-              height: 200,
+              height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -470,7 +493,7 @@ Future<void> _submitReport() async {
                         image: kIsWeb
                             ? NetworkImage(_selectedImage!.path) //web uses blob URLs
                             : FileImage(File(_selectedImage!.path)) as ImageProvider, //mobile uses file paths
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       )
                     : null,
               ),
@@ -480,7 +503,7 @@ Future<void> _submitReport() async {
                       children: const [
                         Icon(Icons.camera_alt_outlined, size: 50, color: Colors.grey),
                         SizedBox(height: 10),
-                        Text("Tap to capture", style: TextStyle(color: Colors.grey)),
+                        Text("Tap to select image", style: TextStyle(color: Colors.grey)),
                       ],
                     )
                   : null,
@@ -492,7 +515,7 @@ Future<void> _submitReport() async {
               child: LinearProgressIndicator(),
             ),
           if (_selectedImage != null && !_isAnalyzing) _buildAIPanel(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 15),
           _buildLocationTile(),
           const SizedBox(height: 20),
           TextField(
@@ -594,64 +617,161 @@ Future<void> _submitReport() async {
     );
   }
 
-  Widget _buildLocationTile() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+Widget _buildLocationTile() {
+  return Column(
+    children: [
+      Container(
+        height: 150,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: FlutterMap(
+            options: MapOptions(
+              initialCenter: LatLng(_latitude ?? 27.7, _longitude ?? 85.3),
+              initialZoom: 15,
+              onTap: (tapPosition, point) {
+                setState(() {
+                  _latitude = point.latitude;
+                  _longitude = point.longitude;
+                  _currentAddress = "Pinned: ${point.latitude.toStringAsFixed(3)}, ${point.longitude.toStringAsFixed(3)}";
+                });
+              },
+            ),
+            children: [
+              TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+              if (_latitude != null)
+                MarkerLayer(markers: [
+                  Marker(
+                    point: LatLng(_latitude!, _longitude!),
+                    child: const Icon(Icons.location_on, color: Colors.red, size: 30),
+                  )
+                ]),
+            ],
+          ),
+        ),
       ),
-      child: ListTile(
-        leading: const Icon(Icons.location_on, color: Colors.redAccent),
-        title: Text(_currentAddress, style: const TextStyle(fontSize: 14)),
+      ListTile(
+        title: Text(_currentAddress, style: const TextStyle(fontSize: 12)),
         trailing: const Icon(Icons.my_location),
         onTap: _determinePosition,
       ),
-    );
-  }
+    ],
+  );
+}
 
-  Widget _buildContributionsTab() {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Text(
-          "Active Reports",
-          style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        _buildTimelineCard("Pothole #102", "Team Dispatched"),
-        _buildTimelineCard("Illegal Trash #99", "Solved"),
-      ],
-    );
-  }
+Widget _buildContributionsTab() {
+  return RefreshIndicator(
+    onRefresh: () async {
+      // This triggers a rebuild of the FutureBuilder
+      _refreshData();
+    },
+  child: FutureBuilder<List<Map<String, dynamic>>>(
+    key: ValueKey(_refreshCounter),
+    future: AuthService.fetchUserReports(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (snapshot.hasError) {
+          return ListView(
+            children: [
+              const SizedBox(height: 100),
+              Center(child: Text("Error: ${snapshot.error}")),
+            ],
+          );
+        }
+      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return ListView(
+            children: const [
+              SizedBox(height: 100),
+              Center(child: Text("No reports yet. Submit one from the first tab!")),
+            ],
+          );
+      }
+
+      final reports = snapshot.data!;
+
+      return ListView.builder(
+        padding: const EdgeInsets.all(20),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: reports.length,
+        itemBuilder: (context, index) {
+          final report = reports[index];
+          return _buildTimelineCard(
+            report['label'] ?? "Issue", 
+            report['status'] ?? "Pending"
+          );
+        },
+      );
+    },
+  ),
+  );
+}
 
   Widget _buildTimelineCard(String title, String status) {
-    bool isSolved = status == "Solved";
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      margin: const EdgeInsets.only(bottom: 15),
-      child: ExpansionTile(
-        leading: Icon(
-          isSolved ? Icons.check_circle : Icons.pending,
-          color: isSolved ? Colors.green : Colors.orange,
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text("Status: $status"),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Column(
-              children: [
-                _buildStatusStep("Submitted", true),
-                _buildStatusStep("Official Viewed", true),
-                _buildStatusStep("Team Dispatched", !isSolved),
-                _buildStatusStep("Solved", isSolved),
-              ],
-            ),
-          )
-        ],
+
+  final statusConfig = {
+    'solved': {'color': Colors.green, 'icon': Icons.check_circle_outline},
+    'team dispatched': {'color': Colors.blue, 'icon': Icons.local_shipping_outlined},
+    'official viewed': {'color': Colors.orange, 'icon': Icons.visibility_outlined},
+  };
+
+  final config = statusConfig[status.toLowerCase()] ?? 
+                 {'color': Colors.grey, 'icon': Icons.help_outline};
+  
+  final Color themeColor = config['color'] as Color;
+  final IconData themeIcon = config['icon'] as IconData;
+
+
+  bool isAtLeastViewed = ['official viewed', 'team dispatched', 'solved'].contains(status.toLowerCase());
+  bool isAtLeastDispatched = ['team dispatched', 'solved'].contains(status.toLowerCase());
+  bool isSolved = status.toLowerCase() == 'solved';
+
+  return Card(
+    elevation: 2,
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    child: ExpansionTile(
+      // Clean leading icon using the dynamic theme
+      leading: CircleAvatar(
+        backgroundColor: themeColor.withOpacity(0.1),
+        child: Icon(themeIcon, color: themeColor, size: 20),
       ),
-    );
-  }
+      title: Text(
+        title, 
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: themeColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: themeColor.withOpacity(0.5)),
+        ),
+        child: Text(
+          status.toUpperCase(),
+          style: TextStyle(color: themeColor, fontSize: 10, fontWeight: FontWeight.bold),
+        ),
+      ),
+
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            children: [
+              const Divider(),
+              const SizedBox(height: 10),
+              _buildStatusStep("Complaint Submitted", true),
+              _buildStatusStep("Official Viewed", isAtLeastViewed),
+              _buildStatusStep("Team Dispatched", isAtLeastDispatched),
+              _buildStatusStep("Issue Solved", isSolved),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildStatusStep(String label, bool done) {
     return Row(
@@ -667,26 +787,6 @@ Future<void> _submitReport() async {
           style: TextStyle(color: done ? Colors.black : Colors.grey),
         ),
       ],
-    );
-  }
-
-  Widget _buildSocialCircleTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.groups_outlined, size: 80, color: Colors.grey[300]),
-            const SizedBox(height: 20),
-            Text(
-              "Nearby community reports appearing soon!",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
