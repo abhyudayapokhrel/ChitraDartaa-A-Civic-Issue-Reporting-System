@@ -2,6 +2,7 @@
   import 'package:flutter_map/flutter_map.dart';
   import 'package:latlong2/latlong.dart';
   import 'package:chitradartaa/frontend/auth.dart'; 
+  import 'dart:convert';
   
   class Myadministrator extends StatefulWidget {
     const Myadministrator({super.key});
@@ -18,6 +19,32 @@
     bool _isLoading = true;
 
     List<Map<String, dynamic>> issues = [];
+
+    void _showFullImage(String base64String) {
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(10),
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.memory(
+              base64Decode(base64String),
+              fit: BoxFit.contain,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
     @override
     void initState() {
@@ -319,6 +346,11 @@
     }
 
     Widget _buildIssueCard(Map<String, dynamic> issue) {
+
+    final String? base64Image = issue['segmented_image'];
+    final String label = issue['label'] ?? "Unlabeled Issue";
+    final String status = issue['status'] ?? "reported";
+      
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
@@ -333,68 +365,139 @@
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: Text(issue['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                // 1. Display the image from Backend (Base64)
+              GestureDetector(
+                onTap: () {
+                  if (base64Image != null && base64Image.isNotEmpty) {
+                    _showFullImage(base64Image);
+                  }
+                },
+                child: Container(
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(issue['status']).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(_getStatusIcon(issue['status']), size: 14, color: _getStatusColor(issue['status'])),
-                      const SizedBox(width: 4),
-                      Text(_getStatusLabel(issue['status']), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _getStatusColor(issue['status']))),
-                    ],
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: base64Image != null && base64Image.isNotEmpty
+                        ? Image.memory(
+                            base64Decode(base64Image),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image, size: 30),
+                          )
+                        : const Icon(Icons.image, color: Colors.grey, size: 30),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(issue['description'], style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563))),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.access_time, size: 12, color: Color(0xFF6B7280)),
-                const SizedBox(width: 4),
-                Text(issue['timestamp'], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-                const SizedBox(width: 16),
-                Text('Reporter: ${issue['reporter']}', style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (issue['status'] != 'deployed')
-                  _buildActionButton(
-                    label: 'Deploy',
-                    icon: Icons.navigation,
-                    gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFF59E0B)]),
-                    onPressed: () => _updateIssueStatus(issue['id'], 'deployed'),
+              ),
+              const SizedBox(width: 15),
+
+              // 2. Display the AI Label and Reporter
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 16, 
+                        fontWeight: FontWeight.bold, 
+                        color: Color(0xFF1F2937)
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'By: ${issue['reporter']}',
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                    ),
+                  ],
+                ),
+              ),
+
+
+             // 3. Status Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(status).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _getStatusLabel(status),
+                  style: TextStyle(
+                    fontSize: 11, 
+                    fontWeight: FontWeight.bold, 
+                    color: _getStatusColor(status)
                   ),
-                if (issue['status'] != 'underprocessed' && issue['status'] != 'resolved')
-                  _buildActionButton(
-                    label: 'Under Process',
-                    icon: Icons.access_time,
-                    gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF6366F1)]),
-                    onPressed: () => _updateIssueStatus(issue['id'], 'underprocessed'),
-                  ),
-                if (issue['status'] != 'resolved')
-                  _buildActionButton(
-                    label: 'Mark Resolved',
-                    icon: Icons.check_circle_outline,
-                    gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
-                    onPressed: () => _updateIssueStatus(issue['id'], 'resolved'),
-                  ),
-              ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // AI Confidence Score (if available)
+          if (issue['confidence_score'] != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                "AI Confidence: ${(issue['confidence_score'] * 100).toStringAsFixed(1)}%",
+                style: TextStyle(
+                  fontSize: 12, 
+                  color: Colors.blueGrey[600], 
+                  fontWeight: FontWeight.w500
+                ),
+              ),
             ),
-          ],
-        ),
-      );
-    }
+          Text(
+            issue['description'] ?? "No description provided.",
+            style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.access_time, size: 12, color: Color(0xFF6B7280)),
+              const SizedBox(width: 4),
+              Text(
+                issue['timestamp'] ?? "Recent",
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Action Buttons
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (status != 'deployed')
+                _buildActionButton(
+                  label: 'Deploy',
+                  icon: Icons.navigation,
+                  gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFF59E0B)]),
+                  onPressed: () => _updateIssueStatus(issue['id'], 'deployed'),
+                ),
+              if (status != 'underprocessed' && status != 'resolved')
+                _buildActionButton(
+                  label: 'Process',
+                  icon: Icons.access_time,
+                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF6366F1)]),
+                  onPressed: () => _updateIssueStatus(issue['id'], 'underprocessed'),
+                ),
+              if (status != 'resolved')
+                _buildActionButton(
+                  label: 'Resolve',
+                  icon: Icons.check_circle_outline,
+                  gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                  onPressed: () => _updateIssueStatus(issue['id'], 'resolved'),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
     Widget _buildActionButton({required String label, required IconData icon, required Gradient gradient, required VoidCallback onPressed}) {
       return InkWell(
