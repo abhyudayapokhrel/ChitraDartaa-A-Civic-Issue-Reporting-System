@@ -6,6 +6,8 @@ import os
 
 
 # Load your models once
+#ISSUE_NON_ISSUE_PATH1 = "issue_detector_model.keras"
+#CLASS_MODEL_PATH = "gar_pot_model.keras"
 
 ISSUE_NON_ISSUE_PATH1 = "issue_non_issue_model1_20split_96.07accuracy.keras"
 ISSUE_NON_ISSUE_PATH2 = "issue_non_issue_model2_40split_96.76accuracy.keras"

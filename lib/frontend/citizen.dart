@@ -417,7 +417,6 @@ Future<void> _submitReport() async {
         children: [
           _buildReportTab(),
           _buildContributionsTab(),
-          _buildSocialCircleTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -433,10 +432,6 @@ Future<void> _submitReport() async {
           BottomNavigationBarItem(
             icon: Icon(Icons.fact_check_outlined),
             label: "My Impact",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.groups_outlined),
-            label: "Social",
           ),
         ],
       ),
@@ -667,26 +662,6 @@ Future<void> _submitReport() async {
           style: TextStyle(color: done ? Colors.black : Colors.grey),
         ),
       ],
-    );
-  }
-
-  Widget _buildSocialCircleTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.groups_outlined, size: 80, color: Colors.grey[300]),
-            const SizedBox(height: 20),
-            Text(
-              "Nearby community reports appearing soon!",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: 16),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
