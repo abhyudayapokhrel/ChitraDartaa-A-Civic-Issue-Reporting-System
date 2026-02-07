@@ -222,5 +222,30 @@ static Future<List<Map<String, dynamic>>> fetchIssues() async {
       return false;
     }
   }
+static Future<List<Map<String, dynamic>>> fetchUserReports() async {
+  final prefs = await SharedPreferences.getInstance();
+  final username = prefs.getString("user");
+  print("FLUTTER DEBUG: Sending username: $username");
+  final token = await getToken();
+  if (username == null) {
+     print("Error: Username is null in SharedPreferences");
+     return [];
+  }
+
+final response = await http.post(
+    Uri.parse("$url/api/citizenreport"),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+    body: jsonEncode({"username": username}),
+  );
+
+  if (response.statusCode == 200) {
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  }
+  return [];
+  throw Exception("Failed to load reports");
+}
 }
 
