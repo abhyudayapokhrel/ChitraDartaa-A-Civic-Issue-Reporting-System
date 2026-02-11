@@ -238,3 +238,5 @@ enve_chitradarta
 lib\backend\utils\models
 instance\app.db
 lib/backend/instance/*.db
+
+lib\backend\uploaded_images
